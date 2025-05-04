@@ -1,1 +1,5 @@
 .github/*
+dags/scripts/__pycache__/*
+tests/__pycache__/*
+
+uv.lock
