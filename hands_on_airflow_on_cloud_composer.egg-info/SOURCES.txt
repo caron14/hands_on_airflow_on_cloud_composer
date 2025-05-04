@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+dags/weekly_bigquery_dbt_python_dag.py
+dags/scripts/custom_script.py
+hands_on_airflow_on_cloud_composer.egg-info/PKG-INFO
+hands_on_airflow_on_cloud_composer.egg-info/SOURCES.txt
+hands_on_airflow_on_cloud_composer.egg-info/dependency_links.txt
+hands_on_airflow_on_cloud_composer.egg-info/requires.txt
+hands_on_airflow_on_cloud_composer.egg-info/top_level.txt
+tests/test_dag_integrity.py
