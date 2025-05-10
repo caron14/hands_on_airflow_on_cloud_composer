@@ -11,7 +11,8 @@ Note:
 
 import pendulum
 
-from airflow.models.dag import DAG
+# from airflow.models.dag import DAG
+from airflow.models import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.operators.bash import BashOperator
 
@@ -25,7 +26,7 @@ with DAG(
         'owner': 'airflow',
         'depends_on_past': False,
         'retries': 1,
-        'retry_delay': pendulum.duration(minutes=30),
+        'retry_delay': pendulum.duration(minutes=1),
         'email_on_failure': False,
         'email_on_retry': False,
     },
@@ -58,7 +59,7 @@ with DAG(
         task_id='run_dummy_func',
         bash_command=(
             'python '
-            'dags/scripts/dummy_func.py '
+            '{{ dag.folder }}/scripts/dummy_func.py '
             '--execution_date {{ ds }}'
         ),
     )
