@@ -25,7 +25,7 @@ with DAG(
     default_args={
         'owner': 'airflow',
         'depends_on_past': False,
-        'retries': 1,
+        'retries': 0,
         'retry_delay': pendulum.duration(minutes=1),
         'email_on_failure': False,
         'email_on_retry': False,
