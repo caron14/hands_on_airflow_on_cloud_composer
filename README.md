@@ -46,12 +46,20 @@ gsutil cp dag_definition.py gs://your-composer-bucket/dags/
 ```
 Ensure all related `.sql` and `.py` files are also uploaded appropriately to maintain modularity.
 
-## Flow Diagram
+## Flow Diagram (Airflow DAG)
+The following flowchart illustrates the task dependencies in this workflow:
+
 ```mermaid
 graph LR;
     Bash[Echo Task: Print Execution Date] --> BigQuery[BigQuery Task: Execute SQL Query];
     BigQuery --> Python[Python Task: Run Custom Script];
 ```
+
+- **run_echo_exec_dt**: Outputs the execution date using Bash.
+- **run_bigquery_task**: Executes a BigQuery job using a SQL file.
+- **run_dummy_func**: Runs a Python script (`dummy_func.py`).
+
+Tasks are executed in this order.
 
 ## Best Practices
 - **Idempotency:** Ensure all tasks can safely rerun without adverse effects.
