@@ -1,22 +1,21 @@
-# Airflow, BigQuery, and dbt Workflow
+# Airflow, BigQuery, and Python Workflow
 
 ## Overview
-This document provides instructions for the design and implementation of an Apache Airflow workflow integrated with BigQuery and dbt (data build tool) on Google Cloud Composer 2.x. The workflow automates the execution of data transformation and Python-based tasks weekly.
+This document provides instructions for the design and implementation of an Apache Airflow workflow integrated with BigQuery and custom Python scripts on Google Cloud Composer 2.x. The workflow automates the execution of a scheduled BigQuery SQL query and a Python-based task weekly.
 
 ## System Components
 - **Apache Airflow (Google Cloud Composer):** Manages workflow scheduling and task orchestration.
 - **BigQuery:** Data warehouse used for running SQL queries and storing results.
-- **dbt Cloud:** Manages data transformation using SQL models, testing, and documentation.
 - **Python Scripts:** For custom processing and utility operations within workflows.
 
 ## Workflow Steps
-1.  **BigQuery Task:**
-    - Executes a scheduled SQL query.
+1.  **Bash Task:**
+    - Prints the execution date for logging or debugging purposes.
+2.  **BigQuery Task:**
+    - Executes a scheduled SQL query using a parameterized SQL file.
     - Generates or updates summary tables in BigQuery.
-2.  **dbt Task:**
-    - Triggers a dbt job via dbt Cloud API to perform data transformations and generate data quality reports.
 3.  **Python Task:**
-    - Executes Python scripts to perform additional custom logic (e.g., logging or data validation).
+    - Executes a Python script to perform additional custom logic (e.g., logging or data validation).
 
 ## Setup and Requirements
 
@@ -37,7 +36,7 @@ dags/
 ├── sql/
 │   └── weekly_summary.sql
 └── scripts/
-    └── custom_script.py
+    └── dummy_func.py
 ```
 
 ## Airflow DAG Deployment
@@ -50,8 +49,8 @@ Ensure all related `.sql` and `.py` files are also uploaded appropriately to mai
 ## Flow Diagram
 ```mermaid
 graph LR;
-    BigQuery[BigQuery Task: Execute SQL Query] --> dbt[dbt Task: Trigger dbt Cloud Job];
-    dbt --> Python[Python Task: Run Custom Script];
+    Bash[Echo Task: Print Execution Date] --> BigQuery[BigQuery Task: Execute SQL Query];
+    BigQuery --> Python[Python Task: Run Custom Script];
 ```
 
 ## Best Practices
@@ -66,25 +65,22 @@ For assistance or questions regarding this workflow, contact the data engineerin
 
 ---
 
-# Comprehensive Guide: Creating an Apache Airflow DAG on Google Cloud Composer 2.x with dbt
+# Comprehensive Guide: Creating an Apache Airflow DAG on Google Cloud Composer 2.x
 
 ## Introduction
 Google Cloud Composer is a managed version of Apache Airflow provided by Google Cloud Platform (GCP). It allows users to orchestrate, schedule, and manage workflows without worrying about infrastructure.
-dbt (data build tool) is a popular tool used to transform data within warehouses such as BigQuery. Integrating dbt with Airflow can streamline data transformation tasks within your DAGs.
 
 ## Core Components
 - **DAG:** Defines the workflow's structure, tasks, and schedule.
 - **BigQueryInsertJobOperator:** Executes BigQuery SQL jobs.
 - **PythonOperator:** Executes custom Python functions within Airflow.
-- **dbt:** Transforms data using SQL with version control, testing, and documentation.
 
 ## Prerequisites
 - A GCP Project with Cloud Composer and BigQuery APIs enabled.
 - Composer environment set up with Airflow 2.x.
 - IAM permissions for Composer's service account:
     - BigQuery Job User
-    - BigQuery Data Editor (for writing results)
-- dbt Cloud or self-hosted dbt Core configured to connect to BigQuery.
+    - BigQuery Data Editor (for writing results).
 
 ## DAG File Structure
 Your DAG file (`.py`) should contain:
@@ -99,7 +95,7 @@ Your DAG file (`.py`) should contain:
 from airflow import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.http.operators.http import SimpleHttpOperator
+from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 ```
 
@@ -119,12 +115,18 @@ default_args = {
 ### 3. DAG Definition
 ```python
 with DAG(
-    dag_id='weekly_bigquery_dbt_python_dag',
+    dag_id='weekly_dag_bigquery_and_python_execution',
     default_args=default_args,
     schedule_interval='@weekly',
     catchup=False,
-    tags=['example', 'dbt'],
+    tags=['example'],
 ) as dag:
+
+    # Bash Task
+    bash_task = BashOperator(
+        task_id='print_execution_date',
+        bash_command='echo "Execution date is {{ ds }}"',
+    )
 
     # BigQuery Task
     bigquery_task = BigQueryInsertJobOperator(
@@ -142,17 +144,6 @@ with DAG(
         gcp_conn_id='google_cloud_default',
     )
 
-    # dbt Task (assuming dbt Cloud API)
-    dbt_task = SimpleHttpOperator(
-        task_id='run_dbt_job',
-        http_conn_id='dbt_cloud_default',
-        endpoint='api/v2/accounts/<account_id>/jobs/<job_id>/run/',
-        method='POST',
-        headers={'Authorization': 'Token <your_dbt_cloud_api_token>'},
-        response_check=lambda response: response.status_code == 200,
-        log_response=True,
-    )
-
     # Python Task
     def python_task_callable(execution_date, **kwargs):
         print(f'Execution date: {execution_date}')
@@ -164,7 +155,7 @@ with DAG(
     )
 
     # Task Dependencies
-    bigquery_task >> dbt_task >> python_task
+    bash_task >> bigquery_task >> python_task
 ```
 
 ## Deployment
@@ -177,12 +168,12 @@ Composer detects new DAGs automatically within a few minutes.
 ## Best Practices
 - **Idempotency:** Tasks should be safe to rerun.
 - **Parameterization:** Use Jinja templating (e.g., `{{ ds }}`) for dynamic operations.
-- **Connections:** Use Airflow's `google_cloud_default` and configured `dbt_cloud_default` connection.
+- **Connections:** Use Airflow's `google_cloud_default` connection.
 - **Modularity:** Move complex logic to separate Python scripts/modules.
 - **Clear Naming:** Descriptive and concise task IDs.
 - **Error Handling:** Utilize retries and proper logging.
 - **SQL Queries:** For complex SQL, store queries in `.sql` files referenced from operators.
 
 ## Conclusion
-You've successfully created and deployed an Airflow DAG orchestrating BigQuery, dbt, and Python tasks, scheduled to run weekly. This integration enhances your data workflows with the power and organization of dbt alongside Airflow and BigQuery.
+You've successfully created and deployed an Airflow DAG orchestrating BigQuery and Python tasks, scheduled to run weekly. This integration enhances your data workflows with the power and organization of Airflow and BigQuery.
 
