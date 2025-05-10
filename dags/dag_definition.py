@@ -11,7 +11,6 @@ Note:
 
 import pendulum
 
-# from airflow.models.dag import DAG
 from airflow.models import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.operators.bash import BashOperator
