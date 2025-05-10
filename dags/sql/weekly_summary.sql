@@ -8,6 +8,6 @@ CREATE OR REPLACE TABLE `composer-practice-458112.hands_on_airflow_on_cloud_comp
     `{{ ds }}` AS csdate,
     *,
   FROM
-    `bigquery-public-data.baseball.schedules`
+    `composer-practice-458112.baseball.schedules`
   LIMIT 10
 ;
