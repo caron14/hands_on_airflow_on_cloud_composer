@@ -8,8 +8,9 @@ Note:
     - Follows PEP8 and Google style docstrings for maintainability.
     - Tasks are ordered for clarity and future extensibility.
 """
-
+from datetime import datetime
 import pendulum
+from uuid import uuid4
 
 from airflow.models import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
@@ -43,9 +44,29 @@ with DAG(
         task_id='run_bigquery_task',
         configuration={
             "query": {
-                # Reference the SQL file
-                "query": "{% include 'sql/weekly_summary.sql' %}",
+                # Reference the SQL file with additional Jinja variables
+                "query": (
+                    "{% include 'sql/weekly_summary.sql' %}"
+                ),
                 "useLegacySql": False,
+                "parameterMode": "NAMED",
+                "queryParameters": [
+                    {
+                        "name": "run_id",
+                        "parameterType": {"type": "STRING"},
+                        "parameterValue": {"value": uuid4().hex},
+                    },
+                    {
+                        "name": "dag_id",
+                        "parameterType": {"type": "STRING"},
+                        "parameterValue": {"value": "{{ dag.dag_id }}"},
+                    },
+                    {
+                        "name": "execution_date",
+                        "parameterType": {"type": "STRING"},
+                        "parameterValue": {"value": "{{ ts }}"},
+                    },
+                ],
             }
         },
         location='asia-northeast1',  # Specify your BigQuery location (Tokyo)
