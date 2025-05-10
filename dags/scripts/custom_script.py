@@ -1,6 +1,6 @@
 import logging
 
-def run_custom_logic(execution_date: str, **kwargs):
+def run_dummy_func(execution_date: str, **kwargs):
     """
     Executes custom Python logic, such as logging or data validation.
 

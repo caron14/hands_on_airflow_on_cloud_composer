@@ -1,14 +1,19 @@
-from __future__ import annotations
+"""
+DAG definition for weekly BigQuery and Bash tasks on Cloud Composer.
+
+This DAG demonstrates a typical workflow where a BigQuery job is executed
+using a SQL file, followed by a Bash task. The DAG is scheduled to run weekly.
+
+Note:
+    - Follows PEP8 and Google style docstrings for maintainability.
+    - Tasks are ordered for clarity and future extensibility.
+"""
 
 import pendulum
 
 from airflow.models.dag import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
-from airflow.operators.python import PythonOperator
-
-# Import the custom Python function
-from scripts.custom_script import run_custom_logic
-
+from airflow.operators.bash import BashOperator
 
 with DAG(
     dag_id='weekly_bigquery_python_dag',  # Updated DAG ID
@@ -20,14 +25,22 @@ with DAG(
         'owner': 'airflow',
         'depends_on_past': False,
         'retries': 1,
-        'retry_delay': pendulum.duration(minutes=5),
+        'retry_delay': pendulum.duration(minutes=30),
         'email_on_failure': False,
         'email_on_retry': False,
     },
 ) as dag:
+    # Bash Task - Run a shell command or script
+    # Prints the execution date; replace with your actual script as needed.
+    echo_exec_dt = BashOperator(
+        task_id='run_echo_exec_dt',
+        bash_command='echo "Execution date: {{ ds }}"',
+    )
+
     # BigQuery Task - Load SQL from file
+    # Executes a BigQuery job using a SQL file for weekly summary aggregation.
     bigquery_task = BigQueryInsertJobOperator(
-        task_id='execute_bigquery_task',
+        task_id='run_bigquery_task',
         configuration={
             "query": {
                 # Reference the SQL file
@@ -35,17 +48,20 @@ with DAG(
                 "useLegacySql": False,
             }
         },
-        location='US',  # Specify your BigQuery location
+        location='asia-northeast1',  # Specify your BigQuery location (Tokyo)
         gcp_conn_id='google_cloud_default',  # Uses the default Composer connection
     )
 
-    # Python Task - Call the imported function
-    python_task = PythonOperator(
-        task_id='run_python_task',
-        python_callable=run_custom_logic,
-        # Pass execution_date using Jinja templating
-        op_kwargs={'execution_date': '{{ ds }}'},
+    # Bash Task - Run a shell command or script
+    # Prints the execution date; replace with your actual script as needed.
+    bash_task = BashOperator(
+        task_id='run_dummy_func',
+        bash_command=(
+            'python '
+            'dags/scripts/dummy_func.py '
+            '--execution_date {{ ds }}'
+        ),
     )
 
-    # Define Task Dependencies - Updated to remove dbt_task
-    bigquery_task >> python_task
+    # Define Task Dependencies - BigQuery must finish before Bash task runs
+    echo_exec_dt >> bigquery_task >> bash_task

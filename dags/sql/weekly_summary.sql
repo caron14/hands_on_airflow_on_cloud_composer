@@ -5,9 +5,8 @@
 CREATE OR REPLACE TABLE `composer-practice-458112.hands_on_airflow_on_cloud_composer.baseball_schedules_{{ ds_nodash }}` AS
 
   SELECT
-    '{{ ds }}' AS csdate,
-    -- Add other aggregation logic here based on your source tables
-    -- Example: COUNT(*) AS total_records
+    `{{ ds }}` AS csdate,
+    *,
   FROM
     `bigquery-public-data.baseball.schedules`
   LIMIT 10
