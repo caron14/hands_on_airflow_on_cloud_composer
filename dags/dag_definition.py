@@ -16,6 +16,7 @@ from airflow.models import DAG
 from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 from airflow.operators.bash import BashOperator
 
+
 with DAG(
     dag_id='weekly_dag_bigquery_and_python_execution',
     start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
