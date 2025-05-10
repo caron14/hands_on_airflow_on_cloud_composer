@@ -17,11 +17,11 @@ from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobO
 from airflow.operators.bash import BashOperator
 
 with DAG(
-    dag_id='weekly_bigquery_python_dag',  # Updated DAG ID
+    dag_id='weekly_dag_bigquery_and_python_execution',
     start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
     schedule='@weekly',
     catchup=False,
-    tags=['example', 'bigquery'],  # Removed 'dbt' tag
+    tags=['example', 'bigquery'],
     default_args={
         'owner': 'airflow',
         'depends_on_past': False,
