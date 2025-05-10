@@ -5,7 +5,7 @@
 CREATE OR REPLACE TABLE `composer-practice-458112.hands_on_airflow_on_cloud_composer.baseball_schedules_{{ ds_nodash }}` AS
 
   SELECT
-    `{{ ds }}` AS csdate,
+    '{{ ds }}' AS csdate,
     *,
   FROM
     `composer-practice-458112.baseball.schedules`
