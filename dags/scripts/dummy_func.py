@@ -13,3 +13,7 @@ def run_dummy_func(execution_date: str, **kwargs):
     # Example: data validation, logging results, etc.
     print(f"Python task executed for date: {execution_date}")
 
+
+if __name__ == "__main__":
+    # Example execution for testing purposes
+    run_dummy_func(execution_date="2024-01-15")
