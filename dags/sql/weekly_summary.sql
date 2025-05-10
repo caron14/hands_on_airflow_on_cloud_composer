@@ -8,6 +8,6 @@ CREATE OR REPLACE TABLE `composer-practice-458112.hands_on_airflow_on_cloud_comp
     '{{ ds }}' AS csdate,
     *,
   FROM
-    `composer-practice-458112.baseball.schedules`
+    `composer-practice-458112.baseball.schedules_rev`
   LIMIT 10
 ;
